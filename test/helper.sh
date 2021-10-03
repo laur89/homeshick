@@ -78,9 +78,10 @@ castle() {
 }
 
 is_symlink() {
+  local expected path target
   expected=$1
   path=$2
-  target=$(readlink "$path")
+  target=$(readlink -- "$path")
   [ "$expected" = "$target" ]
 }
 
