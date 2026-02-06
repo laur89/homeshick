@@ -218,6 +218,18 @@ create_rel_path() {
   fi
 }
 
+is_valid_json() {
+  local file
+
+  command -v jq >/dev/null 2>&1 || return 2
+
+  for file in "$@"; do
+    jq -e . >/dev/null 2>&1 "$file" || return 1
+  done
+
+  return 0
+}
+
 # check if given two files have same contents.
 # files _may_ be symlinks.
 #
@@ -226,7 +238,10 @@ files_are_same() {
   local f1="$1"
   local f2="$2"
 
-  if command -v cmp >/dev/null 2>/dev/null; then
+  #if is_valid_json "$f1" "$f2"; then
+  if command -v jq >/dev/null 2>&1 && jq -en --slurpfile a "$f1" --slurpfile b "$f2" '$a == $b' >/dev/null 2>&1; then
+    return 0
+  elif command -v cmp >/dev/null 2>/dev/null; then
     cmp --silent -- "$f1" "$f2"
     return $?
   elif command -v diff >/dev/null 2>/dev/null; then
